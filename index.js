@@ -1,10 +1,13 @@
 import express from 'express';
 import { MongoClient } from 'mongodb';
 import cors from 'cors';
+import * as dotenv from 'dotenv';
+
+dotenv.config()
 
 const app = express();
-const PORT = 4000; 
-const mongo_url = "mongodb+srv://suryamsp:4119@cluster0.zgm9qml.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const PORT = process.env.PORT; 
+const mongo_url = process.env.URL;
 
 const allowedOrigins = ['http://localhost:5173', 'https://snegamsp.netlify.app'];
 
