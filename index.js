@@ -29,17 +29,14 @@ async function main() {
     console.log('Connected to MongoDB');
 
     app.get("/", async function (request, response) {
-      try {
+  
         const list = await client
           .db("oladb")
           .collection("olaname")
           .find({})
           .toArray();
         response.send(list);
-      } catch (err) {
-        console.error(err);
-        response.status(500).send("Error retrieving data from database");
-      }
+      
     });
 
     app.listen(PORT, () => console.log(`The server started on port: ${PORT} ✨✨`));
