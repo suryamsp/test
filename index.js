@@ -20,7 +20,7 @@ app.use((request, response, next) => {
   next();
 });
 
-const client = new MongoClient(mongo_url, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(mongo_url);
 
 async function main() {
   try {
