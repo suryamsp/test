@@ -1,18 +1,12 @@
 import express from 'express';
+import { MongoClient } from 'mongodb';
+import cors from 'cors';
+
 const app = express();
-import { MongoClient } from "mongodb";
-import cors from "cors";
-
-
-
-
-app.use(express.json());
-
-
 const PORT = 4000; 
 const mongo_url = "mongodb+srv://suryamsp:4119@cluster0.zgm9qml.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-const allowedOrigins = ['http://localhost:5173','https://snegamsp.netlify.app'];
+const allowedOrigins = ['http://localhost:5173', 'https://snegamsp.netlify.app'];
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -26,28 +20,46 @@ app.use((request, response, next) => {
   next();
 });
 
+const client = new MongoClient(mongo_url, { useNewUrlParser: true, useUnifiedTopology: true });
 
-export const client = new MongoClient(mongo_url);
-console.log("mongodb is connected soon ila ");
-
-
-try {
+async function main() {
+  try {
+    // Connect to the MongoDB client
     await client.connect();
-    console.log("MongoDB is connected soon");
-} catch (error) {
-    console.error("Error connecting to MongoDB:", error);
+    console.log('Connected to MongoDB');
+
+    app.get("/", async function (request, response) {
+      try {
+        const list = await client
+          .db("oladb")
+          .collection("olaname")
+          .find({})
+          .toArray();
+        response.send(list);
+      } catch (err) {
+        console.error(err);
+        response.status(500).send("Error retrieving data from database");
+      }
+    });
+
+    app.listen(PORT, () => console.log(`The server started on port: ${PORT} ✨✨`));
+  } catch (err) {
+    console.error('Error connecting to MongoDB', err);
+    process.exit(1);
+  }
 }
 
+main().catch(console.error);
 
-
-
-
-app.get("/", async function (request, response) {
-  const list= await client
-  .db("oladb")
-  .collection("olaname")
-  .find({})
-  .toArray();
-  response.send(list);
+// Gracefully close the MongoDB client connection when the app is terminated
+process.on('SIGINT', async () => {
+  await client.close();
+  console.log('MongoDB client disconnected');
+  process.exit(0);
 });
-app.listen(PORT, () => console.log(`The server started in: ${PORT} ✨✨`));
+
+process.on('SIGTERM', async () => {
+  await client.close();
+  console.log('MongoDB client disconnected');
+  process.exit(0);
+});
